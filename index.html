@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Easy Expense Splitter</title>
+    <style>
+      body {
+        font-family: system-ui, Arial, sans-serif;
+        max-width: 700px;
+        margin: 30px auto;
+        padding: 0 16px;
+        background: #fafafa;
+      }
+      h1 {
+        text-align: center;
+      }
+      h2 {
+        margin-bottom: 8px;
+      }
+      .card {
+        background: white;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      }
+      input,
+      select,
+      button {
+        padding: 8px;
+        margin-top: 6px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      button {
+        cursor: pointer;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+      }
+      .row > * {
+        flex: 1;
+      }
+      .chips label {
+        display: inline-flex;
+        margin: 4px 8px 4px 0;
+      }
+      ul {
+        padding-left: 18px;
+      }
+      li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        border-bottom: 1px solid #eee;
+        padding: 8px 0;
+      }
+      #settlements li {
+        justify-content: start;
+      }
+      .result {
+        font-weight: bold;
+      }
+      .delete {
+        margin-left: auto;
+        margin-right: 0;
+        width: 40px;
+        background: none;
+        border: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Expense Splitter</h1>
+
+    <div class="card">
+      <h2>People</h2>
+      <div class="row">
+        <input id="personName" placeholder="Add person (e.g. Alice)" />
+        <button onclick="addPerson()">Add</button>
+      </div>
+      <ul id="peopleList"></ul>
+    </div>
+
+    <div class="card">
+      <h2>Add Expense</h2>
+      <label for="payer">Who paid?</label>
+      <select id="payer"></select>
+
+      <label for="amount">Amount</label>
+      <input id="amount" type="number" placeholder="e.g. 42" />
+
+      <label for="sharedWith">Split between</label>
+      <div id="sharedWith" class="chips"></div>
+
+      <button onclick="addExpense()">Add Expense</button>
+
+      <ul id="expensesList"></ul>
+    </div>
+
+    <div class="card">
+      <h2>Summary</h2>
+      <button onclick="calculateSettlements()">Calculate balances</button>
+      <h3>What each person ended up paying</h3>
+      <ul id="spending"></ul>
+      <h3>Who pays whom</h3>
+      <ul id="settlements"></ul>
+    </div>
+
+    <script>
+      // --- State ---
+      const people = [];
+      const expenses = [];
+
+      // --- People ---
+      function addPerson() {
+        const input = document.getElementById("personName");
+        const name = input.value.trim();
+        if (!name || people.includes(name)) return;
+        people.push(name);
+        input.value = "";
+        renderPeople();
+      }
+
+      function renderPeople() {
+        const peopleList = document.getElementById("peopleList");
+        const payer = document.getElementById("payer");
+        const sharedWith = document.getElementById("sharedWith");
+
+        peopleList.innerHTML = people.map((p) => `<li>${p}</li>`).join("");
+        payer.innerHTML = people
+          .map((p) => `<option value="${p}">${p}</option>`)
+          .join("");
+        sharedWith.innerHTML = people
+          .map(
+            (p) =>
+              `<label><input type="checkbox" value="${p}" checked /> ${p}</label>`
+          )
+          .join("");
+      }
+
+      // --- Expenses ---
+      function addExpense() {
+        const payerEl = document.getElementById("payer");
+        const amountInput = document.getElementById("amount");
+        const sharedWith = document.getElementById("sharedWith");
+
+        const paidBy = payerEl.value;
+        const amt = parseFloat(amountInput.value);
+        const shared = [...sharedWith.querySelectorAll("input:checked")].map(
+          (i) => i.value
+        );
+        if (!paidBy || !amt || shared.length === 0) return;
+
+        expenses.push({ paidBy, amt, shared });
+        amountInput.value = "";
+        renderExpenses();
+      }
+
+      function renderExpenses() {
+        const expensesList = document.getElementById("expensesList");
+        expensesList.innerHTML = expenses
+          .map(
+            (e, idx) =>
+              `<li>
+        <span>${e.paidBy} paid €${e.amt.toFixed(2)} split with ${e.shared.join(
+                ", "
+              )}</span>
+        <button class="delete" onclick="removeExpense(${idx})">✕</button>
+      </li>`
+          )
+          .join("");
+      }
+
+      function removeExpense(index) {
+        expenses.splice(index, 1);
+        renderExpenses();
+      }
+
+      // --- Settlement ---
+      function calculateSettlements() {
+        const spendingEl = document.getElementById("spending");
+        const settlementsEl = document.getElementById("settlements");
+
+        const balance = Object.fromEntries(people.map((p) => [p, 0]));
+        const owed = Object.fromEntries(people.map((p) => [p, 0]));
+
+        for (const e of expenses) {
+          const share = e.amt / e.shared.length;
+          e.shared.forEach((p) => {
+            balance[p] -= share;
+            owed[p] += share;
+          });
+          balance[e.paidBy] += e.amt;
+        }
+
+        spendingEl.innerHTML = people
+          .map(
+            (p) =>
+              `<li><span class="result">${p}</span> paid €${owed[p].toFixed(
+                2
+              )} in total</li>`
+          )
+          .join("");
+
+        const debtors = [];
+        const creditors = [];
+
+        for (const [p, b] of Object.entries(balance)) {
+          if (b < -0.01) debtors.push({ p, amt: -b });
+          else if (b > 0.01) creditors.push({ p, amt: b });
+        }
+
+        const result = [];
+        let i = 0,
+          j = 0;
+        while (i < debtors.length && j < creditors.length) {
+          const pay = Math.min(debtors[i].amt, creditors[j].amt);
+          result.push(
+            `<span class="result">${
+              debtors[i].p
+            }</span> pays <span class="result">${
+              creditors[j].p
+            }</span>: €${pay.toFixed(2)}`
+          );
+          debtors[i].amt -= pay;
+          creditors[j].amt -= pay;
+          if (debtors[i].amt < 0.01) i++;
+          if (creditors[j].amt < 0.01) j++;
+        }
+
+        settlementsEl.innerHTML = result.map((r) => `<li>${r}</li>`).join("");
+      }
+
+      // --- Basic self-tests (console) ---
+      (function runTests() {
+        people.length = 0;
+        expenses.length = 0;
+        people.push("Alice", "Bob", "Charlie");
+        expenses.push({
+          paidBy: "Alice",
+          amt: 60,
+          shared: ["Alice", "Bob", "Charlie"],
+        });
+        expenses.push({
+          paidBy: "Bob",
+          amt: 30,
+          shared: ["Alice", "Bob", "Charlie"],
+        });
+
+        const owed = Object.fromEntries(people.map((p) => [p, 0]));
+        for (const e of expenses) {
+          const share = e.amt / e.shared.length;
+          e.shared.forEach((p) => (owed[p] += share));
+        }
+
+        console.assert(
+          Math.abs(owed["Alice"] - 30) < 0.01,
+          "Alice final cost should be 30"
+        );
+        console.assert(
+          Math.abs(owed["Bob"] - 30) < 0.01,
+          "Bob final cost should be 30"
+        );
+        console.assert(
+          Math.abs(owed["Charlie"] - 30) < 0.01,
+          "Charlie final cost should be 30"
+        );
+
+        people.length = 0;
+        expenses.length = 0;
+      })();
+    </script>
+  </body>
+</html>
