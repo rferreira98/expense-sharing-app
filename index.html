@@ -118,7 +118,7 @@
       <label for="amount">Amount</label>
       <input id="amount" type="number" placeholder="e.g. 42" />
 
-      <label for="sharedWith">Split between</label>
+      <div>Split between</div>
       <div id="sharedWith" class="chips"></div>
 
       <button onclick="addExpense()">Add Expense</button>
@@ -162,7 +162,7 @@
         sharedWith.innerHTML = people
           .map(
             (p) =>
-              `<label><input type="checkbox" value="${p}" checked /> ${p}</label>`
+              `<label for="person-${p}"><input type="checkbox" id="person-${p}" value="${p}" checked /> ${p}</label>`
           )
           .join("");
       }
