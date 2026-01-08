@@ -3,59 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Easy Expense Splitter</title>
+    <title>Easy Expense Sharing</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <style>
       body {
-        font-family: system-ui, Arial, sans-serif;
+        background: #f8f9fa;
+        padding: 20px 0;
+      }
+      .container {
         max-width: 700px;
-        margin: 30px auto;
-        padding: 0 16px;
-        background: #fafafa;
-      }
-      @media (max-width: 768px) {
-        body {
-          margin: 16px auto;
-          padding: 0 12px;
-        }
-      }
-      h1 {
-        text-align: center;
-      }
-      h2 {
-        margin-bottom: 8px;
-      }
-      .card {
-        background: white;
-        border-radius: 8px;
-        padding: 16px;
-        margin-bottom: 16px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      }
-      input,
-      select,
-      button {
-        padding: 8px;
-        margin-top: 6px;
-        width: 100%;
-        box-sizing: border-box;
-      }
-      button {
-        cursor: pointer;
-      }
-      .row {
-        display: flex;
-        gap: 8px;
-      }
-      .row > * {
-        flex: 1;
-      }
-      @media (max-width: 480px) {
-        .row {
-          flex-direction: column;
-        }
       }
       .chips label {
-        display: inline-flex;
         margin: 4px 8px 4px 0;
       }
       @media (max-width: 480px) {
@@ -64,77 +25,81 @@
           font-size: 14px;
         }
       }
-      ul {
-        padding-left: 18px;
-      }
-      li {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        border-bottom: 1px solid #eee;
-        padding: 8px 0;
-      }
-      @media (max-width: 480px) {
-        li {
-          flex-wrap: wrap;
-          gap: 4px;
-        }
-      }
-      #settlements li {
-        justify-content: start;
-      }
       .result {
         font-weight: bold;
-      }
-      .delete {
-        margin-left: auto;
-        margin-right: 0;
-        width: 40px;
-        background: none;
-        border: none;
       }
     </style>
   </head>
   <body>
-    <h1>Expense Splitter</h1>
+    <div class="container">
+      <h1 class="text-center mb-4">Easy Expense Sharing</h1>
 
-    <div class="card">
-      <h2>People</h2>
-      <div class="row">
-        <input id="personName" placeholder="Add person (e.g. Alice)" />
-        <button onclick="addPerson()">Add</button>
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">People</h5>
+          <div class="row g-2">
+            <div class="col">
+              <input
+                id="personName"
+                class="form-control"
+                placeholder="Add person (e.g. Alice)"
+              />
+            </div>
+            <div class="col-auto">
+              <button class="btn btn-primary" onclick="addPerson()">Add</button>
+            </div>
+          </div>
+          <ul id="peopleList" class="list-group list-group-flush mt-3"></ul>
+        </div>
       </div>
-      <ul id="peopleList"></ul>
-    </div>
 
-    <div class="card">
-      <h2>Add Expense</h2>
-      <label for="payer">Who paid?</label>
-      <select id="payer">
-        <option value="">Select a person from the list above</option>
-      </select>
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Add Expense</h5>
+          <div class="mb-3">
+            <label for="payer" class="form-label">Who paid?</label>
+            <select id="payer" class="form-select">
+              <option value="">Select a person from the list above</option>
+            </select>
+          </div>
 
-      <label for="amount">Amount</label>
-      <input id="amount" type="number" placeholder="e.g. 42" />
+          <div class="mb-3">
+            <label for="amount" class="form-label">Amount</label>
+            <input
+              id="amount"
+              type="number"
+              class="form-control"
+              placeholder="e.g. 42"
+            />
+          </div>
 
-      <div>Split between</div>
-      <div id="sharedWith" class="chips"></div>
+          <div class="mb-3">
+            <div class="form-label">Split between</div>
+            <div id="sharedWith" class="chips"></div>
+          </div>
 
-      <button onclick="addExpense()">Add Expense</button>
+          <button class="btn btn-success" onclick="addExpense()">
+            Add Expense
+          </button>
 
-      <ul id="expensesList"></ul>
-    </div>
+          <ul id="expensesList" class="list-group list-group-flush mt-3"></ul>
+        </div>
+      </div>
 
-    <div class="card">
-      <h2>Summary</h2>
-      <button onclick="calculateSettlements()">Calculate balances</button>
-      <h3>What each person ended up paying</h3>
-      <ul id="spending"></ul>
-      <h3>What each person spent upfront</h3>
-      <ul id="upfront"></ul>
-      <h3>Who pays whom</h3>
-      <ul id="settlements"></ul>
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Summary</h5>
+          <button class="btn btn-info mb-3" onclick="calculateSettlements()">
+            Calculate balances
+          </button>
+          <h6>What each person ended up paying</h6>
+          <ul id="spending" class="list-group list-group-flush mb-3"></ul>
+          <h6>What each person spent upfront</h6>
+          <ul id="upfront" class="list-group list-group-flush mb-3"></ul>
+          <h6>Who pays whom</h6>
+          <ul id="settlements" class="list-group list-group-flush"></ul>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -157,14 +122,16 @@
         const payer = document.getElementById("payer");
         const sharedWith = document.getElementById("sharedWith");
 
-        peopleList.innerHTML = people.map((p) => `<li>${p}</li>`).join("");
+        peopleList.innerHTML = people
+          .map((p) => `<li class="list-group-item">${p}</li>`)
+          .join("");
         payer.innerHTML = people
           .map((p) => `<option value="${p}">${p}</option>`)
           .join("");
         sharedWith.innerHTML = people
           .map(
             (p) =>
-              `<label for="person-${p}"><input type="checkbox" id="person-${p}" value="${p}" checked /> ${p}</label>`
+              `<div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="person-${p}" value="${p}" checked /><label class="form-check-label" for="person-${p}">${p}</label></div>`
           )
           .join("");
       }
@@ -192,11 +159,11 @@
         expensesList.innerHTML = expenses
           .map(
             (e, idx) =>
-              `<li>
+              `<li class="list-group-item d-flex justify-content-between align-items-center">
         <span>${e.paidBy} paid €${e.amt.toFixed(2)} split with ${e.shared.join(
                 ", "
               )}</span>
-        <button class="delete" onclick="removeExpense(${idx})">✕</button>
+        <button class="btn btn-outline-danger btn-sm" onclick="removeExpense(${idx})">✕</button>
       </li>`
           )
           .join("");
@@ -230,18 +197,18 @@
         spendingEl.innerHTML = people
           .map(
             (p) =>
-              `<li><span class="result">${p}</span> paid €${owed[p].toFixed(
-                2
-              )} in total</li>`
+              `<li class="list-group-item"><span class="result">${p}</span> paid €${owed[
+                p
+              ].toFixed(2)} in total</li>`
           )
           .join("");
 
         upfrontEl.innerHTML = people
           .map(
             (p) =>
-              `<li><span class="result">${p}</span> spent €${paid[p].toFixed(
-                2
-              )} upfront</li>`
+              `<li class="list-group-item"><span class="result">${p}</span> spent €${paid[
+                p
+              ].toFixed(2)} upfront</li>`
           )
           .join("");
 
@@ -271,7 +238,9 @@
           if (creditors[j].amt < 0.01) j++;
         }
 
-        settlementsEl.innerHTML = result.map((r) => `<li>${r}</li>`).join("");
+        settlementsEl.innerHTML = result
+          .map((r) => `<li class="list-group-item">${r}</li>`)
+          .join("");
       }
 
       // --- Basic self-tests (console) ---
