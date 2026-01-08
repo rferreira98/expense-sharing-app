@@ -131,6 +131,8 @@
       <button onclick="calculateSettlements()">Calculate balances</button>
       <h3>What each person ended up paying</h3>
       <ul id="spending"></ul>
+      <h3>What each person spent upfront</h3>
+      <ul id="upfront"></ul>
       <h3>Who pays whom</h3>
       <ul id="settlements"></ul>
     </div>
@@ -208,10 +210,12 @@
       // --- Settlement ---
       function calculateSettlements() {
         const spendingEl = document.getElementById("spending");
+        const upfrontEl = document.getElementById("upfront");
         const settlementsEl = document.getElementById("settlements");
 
         const balance = Object.fromEntries(people.map((p) => [p, 0]));
         const owed = Object.fromEntries(people.map((p) => [p, 0]));
+        const paid = Object.fromEntries(people.map((p) => [p, 0]));
 
         for (const e of expenses) {
           const share = e.amt / e.shared.length;
@@ -220,6 +224,7 @@
             owed[p] += share;
           });
           balance[e.paidBy] += e.amt;
+          paid[e.paidBy] += e.amt;
         }
 
         spendingEl.innerHTML = people
@@ -228,6 +233,15 @@
               `<li><span class="result">${p}</span> paid €${owed[p].toFixed(
                 2
               )} in total</li>`
+          )
+          .join("");
+
+        upfrontEl.innerHTML = people
+          .map(
+            (p) =>
+              `<li><span class="result">${p}</span> spent €${paid[p].toFixed(
+                2
+              )} upfront</li>`
           )
           .join("");
 
